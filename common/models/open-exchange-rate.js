@@ -6,11 +6,20 @@ module.exports = function(OpenExchangeRate) {
   OpenExchangeRate.getConversionRate = async (value, from, to, email) => {
     try {
       let query = await axios.get(`https://openexchangerates.org/api/latest.json?app_id=${process.env.OPEN_EXCHANGE_RATE_ID}`);
+      let currency = query.data.rates[to];
+      if (!currency) {
+        let currencies = await axios.get(`https://openexchangerates.org/api/currencies.json?app_id=${process.env.OPEN_EXCHANGE_RATE_ID}`);
+
+        return {
+          message: "Currency in 'to' parameter is not valid.",
+          currencies: currencies.data
+        }
+      }
       let result = {
         from,
         to,
         value,
-        result: value * query.data.rates[to]
+        result: value * currency
       }
 
       if (email) {
@@ -23,7 +32,7 @@ module.exports = function(OpenExchangeRate) {
             <div>
               Currency from ${from},<br>
               Currency to ${to},<br>
-              Result: ${value} ${from} -> ${value * query.data.rates[to]} ${to}
+              Result: ${value} ${from} -> ${value * currency} ${to}
             </div>
           `
         });
@@ -39,7 +48,7 @@ module.exports = function(OpenExchangeRate) {
   OpenExchangeRate.remoteMethod('getConversionRate', {
     accepts: [
       { arg: 'value', type: 'number', required: true, http: { source: 'query' } },
-      { arg: 'from', type: 'string', required: true, http: { source: 'query' } },
+      { arg: 'from', type: 'string', required: true, http: { source: 'query' }, description: "Only available to USD currency" },
       { arg: 'to', type: 'string', required: true, http: { source: 'query' } },
       { arg: 'email', type: 'string', http: { source: 'query' } }
     ],
