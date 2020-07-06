@@ -1,6 +1,9 @@
 # Conversion Rates
 
-## How to use?
+## Configuration
+- Use the `.env-example` file to configure your environment variables in `.env`
+
+### How to use?
 
 Use this endpoint ```/api/OpenExchangeRates/get-conversion-rate``` to get a conversion rate.
 
